@@ -8,8 +8,7 @@ ext {
     ]
 
     version = [
-
-            // Mapboxs
+            // Mapbox
             mapboxMapSdk             : '7.4.0',
             mapboxTurf               : '4.8.0',
             mapboxServices           : '4.8.0',
