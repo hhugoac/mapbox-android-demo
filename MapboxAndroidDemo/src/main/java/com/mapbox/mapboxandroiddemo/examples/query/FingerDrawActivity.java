@@ -19,8 +19,6 @@ import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxandroiddemo.R;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -166,9 +164,9 @@ public class FingerDrawActivity extends AppCompatActivity {
             FingerDrawActivity.this.mapboxMap = mapboxMap;
 
             if (showSearchDataLocations) {
-              new LoadGeoJson(FingerDrawActivity.this).execute();
+              new LoadGeoJson(FingerDrawActivity.this,style).execute();
             } else {
-              setUpExample(null);
+              setUpExample(style,null);
             }
 
             findViewById(R.id.clear_map_for_new_draw_fab)
@@ -181,24 +179,15 @@ public class FingerDrawActivity extends AppCompatActivity {
                   freehandDrawLineLayerPointList = new ArrayList<>();
 
                   // Add empty Feature array to the sources
-                  drawLineSource = mapboxMap.getStyle().getSourceAs(FREEHAND_DRAW_LINE_LAYER_SOURCE_ID);
+                  drawLineSource = style.getSourceAs(FREEHAND_DRAW_LINE_LAYER_SOURCE_ID);
                   if (drawLineSource != null) {
                     drawLineSource.setGeoJson(FeatureCollection.fromFeatures(new Feature[]{}));
                   }
 
-                  fillPolygonSource = mapboxMap.getStyle().getSourceAs(FREEHAND_DRAW_FILL_LAYER_SOURCE_ID);
+                  fillPolygonSource = style.getSourceAs(FREEHAND_DRAW_FILL_LAYER_SOURCE_ID);
                   if (fillPolygonSource != null) {
                     fillPolygonSource.setGeoJson(FeatureCollection.fromFeatures(new Feature[]{}));
                   }
-
-                  // Reset camera position to default location
-                  mapboxMap.easeCamera(CameraUpdateFactory
-                    .newCameraPosition(new CameraPosition.Builder()
-                      .target(new LatLng(35.087497, -106.651261))
-                      .zoom(11.679132)
-                      .tilt(0)
-                      .bearing(0)
-                      .build()));
 
                   enabledMapDrawing();
                 }
@@ -213,13 +202,7 @@ public class FingerDrawActivity extends AppCompatActivity {
    * Enable moving the map
    */
   private void enableMapMovement() {
-    mapView.setOnTouchListener(new View.OnTouchListener() {
-      @Override
-      public boolean onTouch(View view, MotionEvent motionEvent) {
-        return false;
-      }
-    });
-    mapboxMap.getUiSettings().setAllGesturesEnabled(true);
+    mapView.setOnTouchListener(null);
   }
 
   /**
@@ -227,14 +210,11 @@ public class FingerDrawActivity extends AppCompatActivity {
    */
   private void enabledMapDrawing() {
     mapView.setOnTouchListener(customOnTouchListener);
-    mapboxMap.getUiSettings().setAllGesturesEnabled(false);
   }
 
-  private void setUpExample(FeatureCollection searchDataFeatureCollection) {
+  private void setUpExample(Style style, FeatureCollection searchDataFeatureCollection) {
 
     searchPointFeatureCollection = searchDataFeatureCollection;
-
-    Style style = mapboxMap.getStyle();
 
     if (style != null) {
       freehandDrawLineLayerPointList = new ArrayList<>();
@@ -277,7 +257,7 @@ public class FingerDrawActivity extends AppCompatActivity {
           public void onClick(View view) {
 
             // Toggle the visibility of the fake data point SymbolLayer icons
-            Layer dataLayer = mapboxMap.getStyle().getLayer(SEARCH_DATA_SYMBOL_LAYER_ID);
+            Layer dataLayer = style.getLayer(SEARCH_DATA_SYMBOL_LAYER_ID);
             if (dataLayer != null) {
               dataLayer.setProperties(
                 VISIBLE.equals(dataLayer.getVisibility().getValue()) ? visibility(NONE) : visibility(VISIBLE));
@@ -297,9 +277,11 @@ public class FingerDrawActivity extends AppCompatActivity {
   private static class LoadGeoJson extends AsyncTask<Void, Void, FeatureCollection> {
 
     private WeakReference<FingerDrawActivity> weakReference;
+    private Style style;
 
-    LoadGeoJson(FingerDrawActivity activity) {
+    LoadGeoJson(FingerDrawActivity activity, Style style) {
       this.weakReference = new WeakReference<>(activity);
+      this.style = style;
     }
 
     @Override
@@ -321,12 +303,13 @@ public class FingerDrawActivity extends AppCompatActivity {
       return scanner.hasNext() ? scanner.next() : "";
     }
 
+
     @Override
     protected void onPostExecute(@Nullable FeatureCollection featureCollection) {
       super.onPostExecute(featureCollection);
       FingerDrawActivity activity = weakReference.get();
       if (activity != null && featureCollection != null) {
-        activity.setUpExample(featureCollection);
+        activity.setUpExample(style,featureCollection);
       }
     }
   }
