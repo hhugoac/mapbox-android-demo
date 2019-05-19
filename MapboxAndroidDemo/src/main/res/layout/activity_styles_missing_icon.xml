@@ -7,13 +7,12 @@
     android:layout_height="match_parent"
     tools:context=".examples.styles.MissingIconActivity">
 
-    <!-- Set the starting camera position and map style using xml-->
     <com.mapbox.mapboxsdk.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        mapbox:mapbox_cameraTargetLat="39.8283"
-        mapbox:mapbox_cameraTargetLng="-98.5795"
-        mapbox:mapbox_cameraZoom="4"/>
+        mapbox:mapbox_cameraTargetLat="39.6226149"
+        mapbox:mapbox_cameraTargetLng="-8.4155273"
+        mapbox:mapbox_cameraZoom="6"/>
 
 </FrameLayout>
